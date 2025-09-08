@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
@@ -19,6 +21,7 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
   TabController? tabController;
   List<Video> searchResults = [];
   List<Video> filteredVideos = [];
+  List<Video> blockedItems = [];
 
   @override
   Future<List<Video>> build() async {
@@ -36,6 +39,7 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = AsyncData(await _fetchCuratedVideos());
+    await fetchBlockedItems();
   }
 
   Future<void> blockItem(String itemId, bool isChannel) async {
@@ -44,9 +48,22 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
   }
 
   Future<void> fetchBlockedItems() async {
+    log("in fetch blocked items");
     final result = await ref.read(apiServiceProvider).fetchBlockedItems();
+    blockedItems = result
+        .map(
+          (content) => Video(
+            description: content["description"] ?? "",
+            thumbnail: content["thumbnail"] ?? "",
+            title: content["title"] ?? "",
+            videoId: content["id"],
+            channelId: content["channelId"] ?? content["id"],
+          ),
+        )
+        .toList();
+    log("result: $result");
     if (tabController?.index == 4) {
-      state = AsyncData(result);
+      state = AsyncData(blockedItems);
     }
     await refresh();
   }
@@ -117,8 +134,11 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
         );
   }
 
-  void filterSearchResults() {
+  void filterSearchResults() async {
     if (tabController == null) return;
+    if (tabController!.index == 4) {
+      await fetchBlockedItems();
+    }
     filteredVideos = searchResults.where((video) {
       final matchesTab =
           tabController!.index == 0 || // All

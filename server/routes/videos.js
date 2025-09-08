@@ -368,27 +368,28 @@ router.get(
   ],
   async (req, res) => {
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return res
         .status(400)
         .json({ error: "Validation failed", details: errors.array() });
     }
 
-    log("userId in blacklist fetching: ", req.user.id);
+    console.log("userId in blacklist fetching: ", req.user.id);
 
     try {
       const { blacklist } = req.user;
       if (!blacklist || blacklist.length === 0) {
-        return res.json({ message: "No blocked items", blocked: [] });
+        return res.json({ message: "No blocked items", results: [] });
       }
 
-      log("blacklist: ", blacklist);
+      console.log("blacklist: ", blacklist);
 
       //separate channel ids and video ids
       const videoIds = blacklist.filter((id) => !id.startsWith("UC"));
       const channelIds = blacklist.filter((id) => id.startsWith("UC"));
 
-      const result = [];
+      const results = [];
 
       //  fetch video details
       if (videoIds.length > 0) {
@@ -399,7 +400,7 @@ router.get(
             "items(id, snippet/title, snippet/thumbnails/default/url, snippet/channelId",
         });
 
-        result.push(
+        results.push(
           ...(videoResponse.data.items || []).map((item) => ({
             id: item.id,
             title: item.snippet.title,
@@ -415,10 +416,10 @@ router.get(
           part: "snippet",
           id: channelIds.join(","),
           fields:
-            "items(id, snippet/title, snippet/description, snippet/thumbnails/default/url, snippet/channelId",
+            "items(id, snippet/title, snippet/description, snippet/thumbnails/default/url)",
         });
 
-        result.push(
+        results.push(
           ...(channelResponse.data.items || []).map((item) => ({
             id: item.id,
             title: item.snippet.title,
@@ -429,8 +430,9 @@ router.get(
         );
       }
 
-      json.status(200).json({ message: "Blacklist items", result });
+      res.status(200).json({ message: "Blacklist items", results: results });
     } catch (err) {
+      console.log("Error: ", err);
       res.status(500).json({ error: "Failed to fetch blocked items" });
     }
   }

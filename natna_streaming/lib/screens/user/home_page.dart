@@ -31,16 +31,13 @@ class _HomePageState extends ConsumerState<HomePage>
     ref.read(videoProvider.notifier).tabController = _tabController;
     _searchController.addListener(_onSearchTextChange);
 
-    ref.read(videoProvider.notifier).fetchBlockedItems();
+    //Fetch blocked items initially
+    // ref.read(videoProvider.notifier).fetchBlockedItems();
   }
 
   void _handleTabChange() {
     if (!_tabController.indexIsChanging) {
-      if (tabItems[_tabController.index] == "Blocked") {
-        ref.read(videoProvider.notifier).fetchBlockedItems();
-      } else {
-        ref.read(videoProvider.notifier).filterSearchResults();
-      }
+      ref.read(videoProvider.notifier).filterSearchResults();
     }
   }
 

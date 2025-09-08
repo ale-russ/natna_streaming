@@ -89,7 +89,7 @@ class ContentServices {
   }
 
   // Fetch blocked items
-  Future<List<Video>> fetchBlockedItems() async {
+  Future<List<dynamic>> fetchBlockedItems() async {
     final userId = await AuthServices().getUserId();
     final headers = await getHeaders();
     final response = await http.get(
@@ -97,16 +97,11 @@ class ContentServices {
       headers: headers,
     );
 
-    log("blocked items response: ${response.body}");
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return (data["videos"] as List)
-          .map((item) => Video.fromJson(item))
-          .toList();
-    } else {
-      throw Exception('Failed to fetch curated videos: ${response.body}');
+    if (response.statusCode != 200) {
+      throw Exception("Failed to fetch blocked items: ${response.body}");
     }
+    final data = jsonDecode(response.body);
+    return data["results"] as List<dynamic>;
   }
 
   // Report item
