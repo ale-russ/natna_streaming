@@ -353,6 +353,7 @@ router.delete(
 
       res.status(200).json({ message: `Removed ${itemId} from blacklist` });
     } catch (err) {
+      console.log("Error: ", err);
       res.status(500).json({ error: "Failed to remove item from blacklist" });
     }
   }

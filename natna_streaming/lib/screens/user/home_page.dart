@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../notifiers/auth_notifier.dart';
 import '../../notifiers/video_notifier.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/blocked_content_card.dart';
 import '../../widgets/content_card.dart';
 import '../../widgets/gradient_scaffold.dart';
 import '../../widgets/search_results.dart';
@@ -31,13 +32,16 @@ class _HomePageState extends ConsumerState<HomePage>
     ref.read(videoProvider.notifier).tabController = _tabController;
     _searchController.addListener(_onSearchTextChange);
 
-    //Fetch blocked items initially
-    // ref.read(videoProvider.notifier).fetchBlockedItems();
+    // Fetch blocked items initially
+    ref.read(videoProvider.notifier).fetchBlockedItems();
   }
 
   void _handleTabChange() {
     if (!_tabController.indexIsChanging) {
       ref.read(videoProvider.notifier).filterSearchResults();
+      if (_tabController.index == 4) {
+        ref.read(videoProvider.notifier).fetchBlockedItems();
+      }
     }
   }
 
@@ -211,8 +215,9 @@ class _HomePageState extends ConsumerState<HomePage>
                     ),
                   ),
                   TabBar(
-                    // isScrollable: true,
+                    isScrollable: true,
                     controller: _tabController,
+                    tabAlignment: TabAlignment.center,
                     indicator: const BoxDecoration(),
                     padding: EdgeInsets.zero,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 3),
@@ -222,7 +227,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       return Container(
                         height: 32,
                         margin: const EdgeInsets.only(top: 12),
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: isSelected
@@ -255,7 +260,9 @@ class _HomePageState extends ConsumerState<HomePage>
                 if (videos.isEmpty) {
                   return const Center(child: Text("No videos available"));
                 }
-                return ContentCard(contents: videos);
+                return _tabController?.index != 4
+                    ? ContentCard(contents: videos)
+                    : BlockedContentCard(contents: videos);
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, stack) => Center(child: Text('Error: $err')),

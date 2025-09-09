@@ -76,10 +76,11 @@ class ContentServices {
 
   //Remove from blacklist;
   Future<void> unblockItem(String itemId) async {
+    log("ItemId: $itemId");
     final userId = await AuthServices().getUserId();
     final headers = await getHeaders();
-    final response = await http.post(
-      Uri.parse("$unblockRoutes/$userId"),
+    final response = await http.delete(
+      Uri.parse("$unblockRoute/$userId"),
       headers: headers,
       body: jsonEncode({"itemId": itemId}),
     );
@@ -89,11 +90,11 @@ class ContentServices {
   }
 
   // Fetch blocked items
-  Future<List<dynamic>> fetchBlockedItems() async {
+  Future<List<dynamic>> getBlockedItems() async {
     final userId = await AuthServices().getUserId();
     final headers = await getHeaders();
     final response = await http.get(
-      Uri.parse("$fetchBlockedRoutes/$userId"),
+      Uri.parse("$fetchBlockedRoute/$userId"),
       headers: headers,
     );
 

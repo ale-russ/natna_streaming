@@ -28,5 +28,5 @@ final blockVideosRoutes = "$baseUrl/api/youtube/block";
 final searchVideosRoutes = "$baseUrl/api/youtube/search";
 final addToWhitelistRoute = "$baseUrl/api/youtube/addToWhitelist";
 final reportChannelRoute = "$baseUrl/api/youtube/reportChannel";
-final unblockRoutes = "$baseUrl/api/youtube/remove-blocked";
-final fetchBlockedRoutes = "$baseUrl/api/youtube/blacklist";
+final unblockRoute = "$baseUrl/api/youtube/unblock";
+final fetchBlockedRoute = "$baseUrl/api/youtube/blacklist";

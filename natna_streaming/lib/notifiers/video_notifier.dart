@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
@@ -22,6 +20,8 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
   List<Video> searchResults = [];
   List<Video> filteredVideos = [];
   List<Video> blockedItems = [];
+  List<Video> curatedVideos = [];
+  bool _hasFetchedBlockedItems = false;
 
   @override
   Future<List<Video>> build() async {
@@ -29,7 +29,8 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
     final token = AuthUtils.getToken();
     if (userId == null && token == null) throw Exception("User not logged in");
     initializeSearch();
-    return _fetchCuratedVideos();
+    curatedVideos = await _fetchCuratedVideos();
+    return curatedVideos;
   }
 
   Future<List<Video>> _fetchCuratedVideos() async {
@@ -38,8 +39,10 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    state = AsyncData(await _fetchCuratedVideos());
-    await fetchBlockedItems();
+    curatedVideos = await _fetchCuratedVideos();
+    if (!_hasFetchedBlockedItems) {
+      await fetchBlockedItems();
+    }
   }
 
   Future<void> blockItem(String itemId, bool isChannel) async {
@@ -48,8 +51,10 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
   }
 
   Future<void> fetchBlockedItems() async {
-    log("in fetch blocked items");
-    final result = await ref.read(apiServiceProvider).fetchBlockedItems();
+    if (tabController?.index == 4) {
+      state = const AsyncLoading();
+    }
+    final result = await ref.read(apiServiceProvider).getBlockedItems();
     blockedItems = result
         .map(
           (content) => Video(
@@ -61,15 +66,19 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
           ),
         )
         .toList();
-    log("result: $result");
+    _hasFetchedBlockedItems = true;
     if (tabController?.index == 4) {
       state = AsyncData(blockedItems);
     }
-    await refresh();
   }
 
   Future<void> addToWhitelist(String itemId) async {
     await ref.read(apiServiceProvider).addToWhitelist(itemId);
+    await refresh();
+  }
+
+  Future<void> unblockItem(String itemId) async {
+    await ref.read(apiServiceProvider).unblockItem(itemId);
     await refresh();
   }
 
@@ -134,19 +143,22 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
         );
   }
 
-  void filterSearchResults() async {
+  void filterSearchResults() {
     if (tabController == null) return;
     if (tabController!.index == 4) {
-      await fetchBlockedItems();
+      state = AsyncData(blockedItems);
+      return;
     }
     filteredVideos = searchResults.where((video) {
+      final titleLower = video.title.toLowerCase();
       final matchesTab =
           tabController!.index == 0 || // All
           (tabController!.index == 1 &&
-              video.title.toLowerCase().contains("music")) || // Music
-          (tabController!.index == 2 && !video.videoId.startsWith("UC")) ||
+              titleLower.contains("music")) || // Music
+          (tabController!.index == 2 &&
+              !video.videoId.startsWith("UC")) || // Videos
           (tabController!.index == 3 &&
-              video.videoId.startsWith("UC")); // Videos
+              video.videoId.startsWith("UC")); // Channels
       return matchesTab;
     }).toList();
 
@@ -155,7 +167,7 @@ class VideoNotifier extends AsyncNotifier<List<Video>> {
     } else if (searchResults.isNotEmpty) {
       state = AsyncData(searchResults);
     } else {
-      state = AsyncData(state.value ?? []);
+      state = AsyncData(curatedVideos);
     }
   }
 

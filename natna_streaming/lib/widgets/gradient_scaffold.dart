@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,8 +34,6 @@ class GradientScaffold extends ConsumerWidget {
     // watch auth state dynamically
     final isLoggedIn =
         AuthUtils.getToken() != null && AuthUtils.getUserId() != null;
-
-    log("current index: $currentIndex");
 
     return Scaffold(
       appBar: appBar,

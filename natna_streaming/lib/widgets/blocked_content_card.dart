@@ -6,8 +6,8 @@ import '../notifiers/video_notifier.dart';
 import '../models/videos_model.dart';
 import '../theme/app_colors.dart';
 
-class ContentCard extends ConsumerStatefulWidget {
-  const ContentCard({super.key, required this.contents});
+class BlockedContentCard extends ConsumerStatefulWidget {
+  const BlockedContentCard({super.key, required this.contents});
 
   final List<Video> contents;
 
@@ -15,7 +15,7 @@ class ContentCard extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _ContentCardState();
 }
 
-class _ContentCardState extends ConsumerState<ContentCard> {
+class _ContentCardState extends ConsumerState<BlockedContentCard> {
   bool isOpen = false;
 
   @override
@@ -26,7 +26,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
       child: GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1,
-          childAspectRatio: 1,
+          childAspectRatio: 0.8,
         ),
         itemCount: widget.contents.length,
         itemBuilder: (context, index) {
@@ -95,30 +95,31 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                             color: AppColors.background,
                             onSelected: (value) {
                               final notifier = ref.read(videoProvider.notifier);
-                              if (value == "no_video") {
-                                notifier.blockItem(itemId, false);
-                              } else if (value == "no_channel") {
-                                notifier.blockItem(channelId, false);
-                              } else if (value == "report_channel") {
-                                notifier.reportItem(channelId, true);
-                              }
+                              notifier.unblockItem(itemId);
+                              // if (value == "no_video") {
+                              //   notifier.blockItem(itemId, false);
+                              // } else if (value == "no_channel") {
+                              //   notifier.blockItem(channelId, false);
+                              // } else if (value == "report_channel") {
+                              //   notifier.reportItem(channelId, true);
+                              // }
                             },
                             itemBuilder: (context) => [
-                              if (!isChannelItem)
-                                const PopupMenuItem<String>(
-                                  value: "no_video",
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.block,
-                                        color: AppColors.borderColor,
-                                        size: 20,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text("Don't recommend video"),
-                                    ],
-                                  ),
-                                ),
+                              // if (!isChannelItem)
+                              //   const PopupMenuItem<String>(
+                              //     value: "no_video",
+                              //     child: Row(
+                              //       children: [
+                              //         Icon(
+                              //           Icons.block,
+                              //           color: AppColors.borderColor,
+                              //           size: 20,
+                              //         ),
+                              //         SizedBox(width: 8),
+                              //         Text("Don't recommend video"),
+                              //       ],
+                              //     ),
+                              //   ),
                               const PopupMenuItem<String>(
                                 value: "no_channel",
                                 child: Row(
@@ -129,7 +130,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                       size: 20,
                                     ),
                                     SizedBox(width: 8),
-                                    Text("Don't recommend channel"),
+                                    Text("Unblock item"),
                                   ],
                                 ),
                               ),
