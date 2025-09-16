@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const Color background = Color(0xFF0F172A);
-  static const Color primary = Color(0xFF8A2D3B);
+  // static const Color primary = Color(0xFF8A2D3B);
+  static const Color primary = Color(0xFF1756A4);
   static const Color shades = Color(0xFF1E293B);
 
   // Optional: You can also define other colors like surface, onSurface, etc.

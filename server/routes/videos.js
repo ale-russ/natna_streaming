@@ -288,7 +288,6 @@ router.post(
     body("isChannel").isBoolean().withMessage("isChannel must be a boolean"),
   ],
   async (req, res) => {
-    // itemId: 97G7mFqt9gw
     const errors = validationResult(req);
     if (!errors.isEmpty())
       return res
@@ -398,7 +397,7 @@ router.get(
           part: "snippet",
           id: videoIds.join(","),
           fields:
-            "items(id, snippet/title, snippet/thumbnails/default/url, snippet/channelId",
+            "items(id, snippet/title, snippet/thumbnails/default/url, snippet/channelId)",
         });
 
         results.push(
